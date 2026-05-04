@@ -1,0 +1,30 @@
+---
+import ArchivePanel from '@components/ArchivePanel.astro'
+import I18nKey from '@i18n/i18nKey'
+import { i18n } from '@i18n/translation'
+import MainGridLayout from '@layouts/MainGridLayout.astro'
+import { getSortedPosts } from '@utils/content-utils'
+
+const LANG = 'ja' as const
+
+export async function getStaticPaths() {
+  const posts = await getSortedPosts('ja')
+
+  const allTags = posts.reduce((acc, post) => {
+    post.data.tags.forEach(tag => acc.add(tag))
+    return acc
+  }, new Set<string>())
+
+  return Array.from(allTags).map(tag => {
+    return {
+      params: { tag },
+    }
+  })
+}
+
+const tag = Astro.params.tag as string
+---
+
+<MainGridLayout title={i18n(I18nKey.archive, LANG)} description={i18n(I18nKey.archive, LANG)} lang={LANG}>
+    <ArchivePanel tags={[tag]} lang={LANG}></ArchivePanel>
+</MainGridLayout>

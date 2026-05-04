@@ -1,9 +1,11 @@
 import I18nKey from '@i18n/i18nKey'
+import { DEFAULT_LANG, LANGS, type Lang } from '@i18n/langs'
 import { i18n } from '@i18n/translation'
 import { getCollection } from 'astro:content'
 
-export async function getSortedPosts() {
-  const allBlogPosts = await getCollection('posts', ({ data }) => {
+export async function getSortedPosts(lang: Lang = DEFAULT_LANG) {
+  const collectionName = LANGS[lang].postsCollection
+  const allBlogPosts = await getCollection(collectionName, ({ data }) => {
     return import.meta.env.PROD ? data.draft !== true : true
   })
   const sorted = allBlogPosts.sort((a, b) => {
@@ -29,8 +31,9 @@ export type Tag = {
   count: number
 }
 
-export async function getTagList(): Promise<Tag[]> {
-  const allBlogPosts = await getCollection('posts', ({ data }) => {
+export async function getTagList(lang: Lang = DEFAULT_LANG): Promise<Tag[]> {
+  const collectionName = LANGS[lang].postsCollection
+  const allBlogPosts = await getCollection(collectionName, ({ data }) => {
     return import.meta.env.PROD ? data.draft !== true : true
   })
 
@@ -42,7 +45,6 @@ export async function getTagList(): Promise<Tag[]> {
     })
   })
 
-  // sort tags
   const keys: string[] = Object.keys(countMap).sort((a, b) => {
     return a.toLowerCase().localeCompare(b.toLowerCase())
   })
@@ -55,14 +57,17 @@ export type Category = {
   count: number
 }
 
-export async function getCategoryList(): Promise<Category[]> {
-  const allBlogPosts = await getCollection('posts', ({ data }) => {
+export async function getCategoryList(
+  lang: Lang = DEFAULT_LANG,
+): Promise<Category[]> {
+  const collectionName = LANGS[lang].postsCollection
+  const allBlogPosts = await getCollection(collectionName, ({ data }) => {
     return import.meta.env.PROD ? data.draft !== true : true
   })
   const count: { [key: string]: number } = {}
   allBlogPosts.map(post => {
     if (!post.data.category) {
-      const ucKey = i18n(I18nKey.uncategorized)
+      const ucKey = i18n(I18nKey.uncategorized, lang)
       count[ucKey] = count[ucKey] ? count[ucKey] + 1 : 1
       return
     }

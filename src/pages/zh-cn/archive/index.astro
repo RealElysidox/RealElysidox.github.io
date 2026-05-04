@@ -1,0 +1,12 @@
+---
+import ArchivePanel from '@components/ArchivePanel.astro'
+import I18nKey from '@i18n/i18nKey'
+import { i18n } from '@i18n/translation'
+import MainGridLayout from '@layouts/MainGridLayout.astro'
+
+const LANG = 'zh_CN' as const
+---
+
+<MainGridLayout title={i18n(I18nKey.archive, LANG)} lang={LANG}>
+    <ArchivePanel lang={LANG}></ArchivePanel>
+</MainGridLayout>

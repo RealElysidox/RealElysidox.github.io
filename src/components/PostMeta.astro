@@ -1,19 +1,27 @@
 ---
-import { formatDateToYYYYMMDD } from '../utils/date-utils'
 import { Icon } from 'astro-icon/components'
-import { i18n } from '../i18n/translation'
+import { DEFAULT_LANG, type Lang } from '../i18n/langs'
 import I18nKey from '../i18n/i18nKey'
-import { url } from '../utils/url-utils'
+import { i18n } from '../i18n/translation'
+import { formatDateToYYYYMMDD } from '../utils/date-utils'
+import { localizedUrl } from '../utils/url-utils'
 
 interface Props {
-  class: string
+  class?: string
   published: Date
   tags: string[]
   category: string
   hideTagsForMobile?: boolean
+  lang?: Lang
 }
-const { published, tags, category, hideTagsForMobile = false } = Astro.props
+const {
+  published,
+  tags,
+  category,
+  hideTagsForMobile = false,
+} = Astro.props
 const className = Astro.props.class
+const lang: Lang = Astro.props.lang ?? DEFAULT_LANG
 ---
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
@@ -33,10 +41,10 @@ const className = Astro.props.class
             <Icon name="material-symbols:book-2-outline-rounded" class="text-xl"></Icon>
         </div>
         <div class="flex flex-row flex-nowrap items-center">
-            <a href={url(`/archive/category/${category || 'uncategorized'}/`)} aria-label=`View all posts in the ${category} category`
+            <a href={localizedUrl(`/archive/category/${category || 'uncategorized'}/`, lang)} aria-label=`View all posts in the ${category} category`
                class="link-lg transition text-50 text-sm font-medium
                             hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
-                {category || i18n(I18nKey.uncategorized)}
+                {category || i18n(I18nKey.uncategorized, lang)}
             </a>
         </div>
     </div>
@@ -50,13 +58,13 @@ const className = Astro.props.class
         <div class="flex flex-row flex-nowrap items-center">
             {(tags && tags.length > 0) && tags.map((tag, i) => (
                 <div class:list={[{"hidden": i == 0}, "mx-1.5 text-[var(--meta-divider)] text-sm"]}>/</div>
-                <a href={url(`/archive/tag/${tag}/`)} aria-label=`View all posts with the ${tag} tag`
+                <a href={localizedUrl(`/archive/tag/${tag}/`, lang)} aria-label=`View all posts with the ${tag} tag`
                    class="link-lg transition text-50 text-sm font-medium
                                 hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
                     {tag}
                 </a>
             ))}
-            {!(tags && tags.length > 0) && <div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags)}</div>}
+            {!(tags && tags.length > 0) && <div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags, lang)}</div>}
         </div>
     </div>
 </div>

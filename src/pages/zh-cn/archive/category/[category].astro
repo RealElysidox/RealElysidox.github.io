@@ -1,0 +1,26 @@
+---
+import ArchivePanel from '@components/ArchivePanel.astro'
+import I18nKey from '@i18n/i18nKey'
+import { i18n } from '@i18n/translation'
+import MainGridLayout from '@layouts/MainGridLayout.astro'
+import { getCategoryList } from '@utils/content-utils'
+
+const LANG = 'zh_CN' as const
+
+export async function getStaticPaths() {
+  const categories = await getCategoryList('zh_CN')
+  return categories.map(category => {
+    return {
+      params: {
+        category: category.name,
+      },
+    }
+  })
+}
+
+const category = Astro.params.category as string
+---
+
+<MainGridLayout title={i18n(I18nKey.archive, LANG)} description={i18n(I18nKey.archive, LANG)} lang={LANG}>
+    <ArchivePanel categories={[category]} lang={LANG}></ArchivePanel>
+</MainGridLayout>

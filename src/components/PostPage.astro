@@ -1,8 +1,15 @@
 ---
+import { DEFAULT_LANG, type Lang } from '../i18n/langs'
 import { getPostUrlBySlug } from '@utils/url-utils'
 import PostCard from './PostCard.astro'
 
+interface Props {
+  page: any
+  lang?: Lang
+}
+
 const { page } = Astro.props
+const lang: Lang = Astro.props.lang ?? DEFAULT_LANG
 
 let delay = 0
 const interval = 50
@@ -16,10 +23,11 @@ const interval = 50
                     tags={entry.data.tags}
                     category={entry.data.category}
                     published={entry.data.published}
-                    url={getPostUrlBySlug(entry.slug)}
+                    url={getPostUrlBySlug(entry.slug, lang)}
                     image={entry.data.image}
                     description={entry.data.description}
                     draft={entry.data.draft}
+                    lang={lang}
                     class:list="onload-animation"
                     style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
             ></PostCard>

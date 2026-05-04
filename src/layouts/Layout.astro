@@ -14,21 +14,39 @@ import {
   LIGHT_MODE,
 } from '../constants/constants'
 import { defaultFavicons } from '../constants/icon'
+import {
+  ALL_LANGS,
+  DEFAULT_LANG,
+  LANGS,
+  type Lang,
+  stripLangFromPath,
+} from '../i18n/langs'
 import type { Favicon } from '../types/config'
-import { url, pathsEqual } from '../utils/url-utils'
+import { localizedUrl, pathsEqual, url } from '../utils/url-utils'
 
 interface Props {
   title?: string
   banner?: string
   description?: string
+  lang?: Lang
 }
 
-let { title, banner, description } = Astro.props
+let { title, banner, description, lang = DEFAULT_LANG } = Astro.props
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
 // Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
 // so use Swup hooks instead to change the height immediately when a link is clicked
-const isHomePage = pathsEqual(Astro.url.pathname, url('/'))
+const homeUrlForLang = localizedUrl('/', lang)
+const isHomePage = pathsEqual(Astro.url.pathname, homeUrlForLang)
+
+const pathWithoutLang = stripLangFromPath(
+  (() => {
+    const base = import.meta.env.BASE_URL.replace(/\/+$/, '')
+    let p = Astro.url.pathname
+    if (base && p.startsWith(base)) p = p.slice(base.length) || '/'
+    return p
+  })(),
+)
 
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
@@ -52,11 +70,16 @@ if (title) {
 const favicons: Favicon[] =
   siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons
 
-const siteLang = siteConfig.lang.replace('_', '-')
+const htmlLang = LANGS[lang].htmlLang
+
+const alternates = ALL_LANGS.map(l => ({
+  hreflang: LANGS[l].htmlLang,
+  href: new URL(localizedUrl(pathWithoutLang, l), Astro.site ?? Astro.url).toString(),
+}))
 ---
 
 <!DOCTYPE html>
-<html lang={siteLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]">
+<html lang={htmlLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]">
 	<head>
 
 		<title>{pageTitle}</title>
@@ -84,6 +107,10 @@ const siteLang = siteConfig.lang.replace('_', '-')
 				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
 			/>
 		))}
+		{alternates.map(a => (
+			<link rel="alternate" hreflang={a.hreflang} href={a.href} />
+		))}
+		<link rel="alternate" hreflang="x-default" href={alternates[0].href} />
 		<!-- Set the theme before the page is rendered to avoid a flash -->
 		<script is:inline define:vars={{DEFAULT_THEME: DEFAULT_THEME, LIGHT_MODE: LIGHT_MODE, DARK_MODE: DARK_MODE, AUTO_MODE: AUTO_MODE}}>
 			const theme = localStorage.getItem('theme') || DEFAULT_THEME;

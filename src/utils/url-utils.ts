@@ -1,4 +1,5 @@
 import i18nKey from '@i18n/i18nKey'
+import { LANGS, type Lang, DEFAULT_LANG, getLangFromPath } from '@i18n/langs'
 import { i18n } from '@i18n/translation'
 
 export function pathsEqual(path1: string, path2: string) {
@@ -12,14 +13,27 @@ function joinUrl(...parts: string[]): string {
   return joined.replace(/\/+/g, '/')
 }
 
-export function getPostUrlBySlug(slug: string): string {
-  return url(`/posts/${slug}/`)
+function withLangPrefix(path: string, lang: Lang): string {
+  const prefix = LANGS[lang].urlPrefix
+  if (!prefix) return path
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  return `/${prefix}${cleanPath}`
 }
 
-export function getCategoryUrl(category: string): string {
-  if (category === i18n(i18nKey.uncategorized))
-    return url('/archive/category/uncategorized/')
-  return url(`/archive/category/${category}/`)
+export function getPostUrlBySlug(
+  slug: string,
+  lang: Lang = DEFAULT_LANG,
+): string {
+  return url(withLangPrefix(`/posts/${slug}/`, lang))
+}
+
+export function getCategoryUrl(
+  category: string,
+  lang: Lang = DEFAULT_LANG,
+): string {
+  if (category === i18n(i18nKey.uncategorized, lang))
+    return url(withLangPrefix('/archive/category/uncategorized/', lang))
+  return url(withLangPrefix(`/archive/category/${category}/`, lang))
 }
 
 export function getDir(path: string): string {
@@ -32,4 +46,17 @@ export function getDir(path: string): string {
 
 export function url(path: string) {
   return joinUrl('', import.meta.env.BASE_URL, path)
+}
+
+export function localizedUrl(path: string, lang: Lang = DEFAULT_LANG): string {
+  return url(withLangPrefix(path, lang))
+}
+
+export function getLangFromAstro(astroUrl: { pathname: string }): Lang {
+  const base = import.meta.env.BASE_URL.replace(/\/+$/, '')
+  let pathname = astroUrl.pathname
+  if (base && pathname.startsWith(base)) {
+    pathname = pathname.slice(base.length) || '/'
+  }
+  return getLangFromPath(pathname)
 }

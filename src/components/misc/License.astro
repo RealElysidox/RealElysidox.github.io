@@ -1,19 +1,22 @@
 ---
-import { formatDateToYYYYMMDD } from '../../utils/date-utils'
 import { Icon } from 'astro-icon/components'
 import { licenseConfig, profileConfig } from '../../config'
-import { i18n } from '../../i18n/translation'
+import { DEFAULT_LANG, type Lang } from '../../i18n/langs'
 import I18nKey from '../../i18n/i18nKey'
+import { i18n } from '../../i18n/translation'
+import { formatDateToYYYYMMDD } from '../../utils/date-utils'
 
 interface Props {
   title: string
   slug: string
   pubDate: Date
   class: string
+  lang?: Lang
 }
 
-const { title, slug, pubDate } = Astro.props
+const { title, pubDate } = Astro.props
 const className = Astro.props.class
+const lang: Lang = Astro.props.lang ?? DEFAULT_LANG
 const profileConf = profileConfig
 const licenseConf = licenseConfig
 const postUrl = decodeURIComponent(Astro.url.toString())
@@ -27,15 +30,15 @@ const postUrl = decodeURIComponent(Astro.url.toString())
     </a>
     <div class="flex gap-6 mt-2">
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.author)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.author, lang)}</div>
             <div class="transition text-black/75 dark:text-white/75 whitespace-nowrap">{profileConf.name}</div>
         </div>
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.publishedAt)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.publishedAt, lang)}</div>
             <div class="transition text-black/75 dark:text-white/75 whitespace-nowrap">{formatDateToYYYYMMDD(pubDate)}</div>
         </div>
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.license)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.license, lang)}</div>
             <a href={licenseConf.url} target="_blank" class="link text-[var(--primary)] whitespace-nowrap">{licenseConf.name}</a>
         </div>
     </div>

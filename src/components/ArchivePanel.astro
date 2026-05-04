@@ -1,18 +1,21 @@
 ---
+import { UNCATEGORIZED } from '@constants/constants'
+import { DEFAULT_LANG, type Lang } from '@i18n/langs'
+import I18nKey from '../i18n/i18nKey'
+import { i18n } from '../i18n/translation'
 import { getSortedPosts } from '../utils/content-utils'
 import { getPostUrlBySlug } from '../utils/url-utils'
-import { i18n } from '../i18n/translation'
-import I18nKey from '../i18n/i18nKey'
-import { UNCATEGORIZED } from '@constants/constants'
 
 interface Props {
   keyword?: string
   tags?: string[]
   categories?: string[]
+  lang?: Lang
 }
 const { keyword, tags, categories } = Astro.props
+const lang: Lang = Astro.props.lang ?? DEFAULT_LANG
 
-let posts = await getSortedPosts()
+let posts = await getSortedPosts(lang)
 
 if (Array.isArray(tags) && tags.length > 0) {
   posts = posts.filter(
@@ -43,13 +46,11 @@ const groups: { year: number; posts: typeof posts }[] = (function () {
     {},
   )
 
-  // convert the object to an array
   const groupedPostsArray = Object.keys(groupedPosts).map(key => ({
     year: parseInt(key),
     posts: groupedPosts[parseInt(key)],
   }))
 
-  // sort years by latest first
   groupedPostsArray.sort((a, b) => b.year - a.year)
   return groupedPostsArray
 })()
@@ -74,10 +75,10 @@ function formatTag(tag: string[]) {
                     <div class="w-[15%] md:w-[10%]">
                         <div class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto -outline-offset-[2px] z-50 outline-3"></div>
                     </div>
-                    <div class="w-[70%] md:w-[80%] transition text-left text-50">{group.posts.length} {i18n(I18nKey.postsCount)}</div>
+                    <div class="w-[70%] md:w-[80%] transition text-left text-50">{group.posts.length} {i18n(I18nKey.postsCount, lang)}</div>
                 </div>
                 {group.posts.map(post => (
-                    <a href={getPostUrlBySlug(post.slug)}
+                    <a href={getPostUrlBySlug(post.slug, lang)}
                        aria-label={post.data.title}
                        class="group btn-plain block h-10 w-full rounded-lg hover:text-[initial]"
                     >
